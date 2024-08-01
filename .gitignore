@@ -17,3 +17,6 @@ junk/
 
 # document
 doc/book
+
+# vscode
+.vscode/
