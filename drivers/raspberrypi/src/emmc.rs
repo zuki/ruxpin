@@ -70,6 +70,7 @@ impl BlockOperations for EmmcDevice {
     }
 
     fn read(&mut self, mut buffer: &mut [u8], offset: u64) -> Result<usize, KernelError> {
+        //debug!("mmc: reading size 0x{:x} at offset 0x{:x} into buffer.size 0x{:x}", self.size, offset, buffer.len());
         if self.size != 0 && offset + buffer.len() as u64 > self.size {
             buffer = &mut buffer[..(self.size - offset as u64) as usize];
         }
@@ -262,7 +263,7 @@ impl EmmcHost {
             // In order to reset the interrupt flags, they must be set to 1 (not 0), so writing it to itself will do that
             EMMC1.set(registers::INTERRUPT_FLAGS, EMMC1.get(registers::INTERRUPT_FLAGS));
 
-            // TODO without the print statement here, it times out on the raspi3 =/ 
+            // TODO without the print statement here, it times out on the raspi3 =/
             debug!("mmc: sending command {:?} {:x}", cmd, arg1);
             EMMC1.set(registers::ARG1, arg1);
             EMMC1.set(registers::COMMAND, command_code(cmd));
@@ -382,4 +383,3 @@ fn wait_until_clear(reg: usize, mask: u32) -> Result<(), KernelError> {
     }
     Err(KernelError::DeviceTimeout)
 }
-

@@ -8,9 +8,9 @@ MOUNTPOINT = build
 IMAGE = ruxpin-ext2-image.bin
 BLOCKSIZE = 4096
 IMAGE_BLOCKS = 1048576		# 4GiB
-PARTITION_OFFSET = 272629760	# Partition 2: 0x8200 * 512
-PARTITION_BLOCKS = 982016
-LOOPBACK = /dev/loop8
+PARTITION_OFFSET = 272629760	# Partition 2: 0x8200 * 0x200 = 0x1040_0000
+PARTITION_BLOCKS = 982016		# 0xefc00: 3836MB
+LOOPBACK = /dev/loop20
 
 COREUTILS_OUTPUTS = $(foreach CMD, $(COREUTILS), bin/coreutils/$(TARGETDIR)/$(CMD))
 
@@ -54,5 +54,3 @@ build-kernel:
 
 clean:
 	rm -rf $(foreach member, $(WORKSPACE_MEMBERS), $(member)/target)
-
-

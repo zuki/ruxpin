@@ -37,6 +37,7 @@ impl TaskCloneArgs {
     }
 }
 
+/// タスクの状態
 #[derive(Copy, Clone, PartialEq)]
 pub enum TaskState {
     Exited,
@@ -156,4 +157,3 @@ impl TaskRecord {
         Ok(())
     }
 }
-

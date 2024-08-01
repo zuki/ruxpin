@@ -14,7 +14,7 @@ pub enum LogLevel {
     Trace,
 }
 
-static mut CONSOLE_LOG_LEVEL: LogLevel = LogLevel::Info;
+static mut CONSOLE_LOG_LEVEL: LogLevel = LogLevel::Debug;
 static mut CONSOLE_DEVICE: ConsoleDevice = ConsoleDevice(null_printk);
 
 fn null_printk(_: &str) {
@@ -132,4 +132,3 @@ pub unsafe fn printk_dump(mut addr: u64, mut size: usize) {
         printkln!(LogLevel::Info, "");
     }
 }
-

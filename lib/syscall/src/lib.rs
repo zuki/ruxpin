@@ -5,7 +5,7 @@ pub use crate::arch::execute_syscall;
 
 use ruxpin_types::{ApiError, FileDesc};
 
-
+/// システムコール関数
 #[repr(usize)]
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum SyscallFunction {
@@ -31,11 +31,16 @@ pub enum SyscallFunction {
     Sbrk,
 }
 
+/// システムコール構造体
 #[derive(Clone, Debug)]
 pub struct SyscallRequest {
+    /// システムコール関数
     pub function: SyscallFunction,
+    /// 引数（最大6個）
     pub args: [usize; 6],
+    /// システムコールの結果
     pub result: usize,
+    /// エラーの有無
     pub error: bool,
 }
 
@@ -52,6 +57,7 @@ impl Default for SyscallRequest {
 
 
 impl SyscallRequest {
+    /// システムコールの結果を構造体に設定する
     pub fn store_result(&mut self, result: Result<usize, ApiError>) {
         match result {
             Ok(value) => {
@@ -66,6 +72,7 @@ impl SyscallRequest {
     }
 }
 
+/// システムコールの結果(usize)に変換するトレイト
 pub trait IntoSyscallResult {
     fn into_result(self) -> usize;
 }
@@ -106,6 +113,7 @@ impl<T> IntoSyscallResult for *const T {
     }
 }
 
+/// システムコールの結果(usize)をもとの形に変換するトレイト
 pub trait FromSyscallResult {
     fn from_result(input: usize) -> Self;
 }
@@ -146,6 +154,10 @@ impl FromSyscallResult for FileDesc {
     }
 }
 
+/// システムコールの引数を設定するするためのマクロ
+/// syscall: &mut SystemucallRequest
+/// i: 引数の値を示す可変変数
+/// name: 引数本体
 #[macro_export]
 macro_rules! syscall_encode {
     ($syscall:ident, $i:ident, $name:ident: usize) => {
@@ -207,6 +219,10 @@ macro_rules! syscall_encode {
     };
 }
 
+/// システムコールの引数から引数の内容を取得するためのマクロ
+/// * syscall: &mut SystemucallRequest
+/// * i: 引数の値を示す可変変数
+/// * name: 引数本体
 #[macro_export]
 macro_rules! syscall_decode {
     ($syscall:ident, $i:ident, $name:ident: usize) => {
@@ -270,4 +286,3 @@ macro_rules! syscall_decode {
         let $name = unsafe { &mut *($syscall.args[$i - 1] as *mut usize as *mut $type) };
     };
 }
-

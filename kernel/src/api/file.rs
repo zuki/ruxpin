@@ -91,7 +91,7 @@ pub fn syscall_mkdir(path: &str, access: FileAccess) -> Result<(), KernelError> 
 }
 
 #[syscall_handler]
-pub fn syscall_getcwd(path: &mut [u8]) -> Result<(), KernelError> {
+pub fn syscall_getcwd(_path: &mut [u8]) -> Result<(), KernelError> {
 
     Err(KernelError::OperationNotPermitted)
 }
@@ -109,4 +109,3 @@ fn get_current_cwd_and_uid() -> Result<(Option<Vnode>, UserID), KernelError> {
 pub fn syscall_sync() -> Result<(), KernelError> {
     fs::sync_all()
 }
-

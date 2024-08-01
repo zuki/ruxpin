@@ -9,6 +9,7 @@
 
 .section .text
 
+// u64 _create_context(&mut Context: context, u64: sp, u64: pc)
 .global _create_context
 _create_context:
 	// Integer Registers
@@ -52,10 +53,10 @@ _create_context:
 	add	x0, x0, #512
 
 	// Additional Control Registers
-	mov	x9, #0x0		// Default value for PSTATE
-	stp	x2, x9, [x0, 0]	// Push the initial PC and PSTATE values
+	mov	x9, #0x0		// PSTATEのデフォルト値
+	stp	x2, x9, [x0, 0]	// 初期PC (x2)とPSTATEを保存
 
-	sub	x0, x0, #(512 + 256)
+	sub	x0, x0, #(512 + 256) // x0 = contextの先頭アドレス
 
 	ret
 
@@ -220,9 +221,10 @@ _loop:
 	b	_loop
 
 
+// EL0からEL1への例外の処理（ユーザプロセスコンテキストを保存）
 // Handle an exception from EL0 to EL1 (save the user process context)
 .macro HANDLE_CONTEXT_SWITCH handler
-	// Save two register values before using the registers for temporary values
+	// テンポラリとして使用する前に2つのレジスタを保存
 	sub	sp, sp, #16
 	stp	x0, x30, [sp, 0]
 
@@ -233,7 +235,8 @@ _loop:
 	//mrs	x0, TTBR1_EL1
 	//msr	TTBR0_EL1, x0
 
-	// EL2/EL3 will cause a fatal error for now
+	// ここではEL2(0b1000)/EL3(0b1100)はファータルエラーとする
+    // EL1 = 0b0100 = #4
 	mrs	x0, CurrentEL
 	mov	x30, #4
 	cmp	x0, x30
@@ -322,6 +325,8 @@ _restore_kernel_context:
 	eret
 
 
+// EL1からEL1への例外を処理（カーネルはすでに実行中なので
+// カーネルレジスタをプロセスコンテキストではなくスタック上に保存）
 // Handle an exception from EL1 to EL1 (ie. the kernel is already running,
 // save kernel registers on the stack instead of the process context).
 .macro HANDLE_KERNEL_EXCEPTION handler
@@ -374,13 +379,13 @@ _debug_print_number:
 	ret
 
 /*
- * Exceptions Table
+ * 例外テーブル
  */
 .balign 4096
 .global _default_exceptions_table
 _default_exceptions_table:
 
-// Exceptions where SP_EL0 is the stack
+// スタックがSP＿EL0のときの例外
 .balign 0x80	// Synchronous
 	b	_kernel_exception_fatal
 
@@ -393,7 +398,7 @@ _default_exceptions_table:
 .balign 0x80	// SError
 	b	_kernel_exception_fatal
 
-// Exceptions where SP_ELx is the stack
+// スタックがSP_ELxのときの例外
 .balign 0x80	// Synchronous
 	HANDLE_KERNEL_EXCEPTION handle_kernel_exception
 
@@ -406,7 +411,7 @@ _default_exceptions_table:
 .balign 0x80	// SError
 	b	_kernel_exception_fatal
 
-// Exceptions from lower EL in AArch64
+// AArch64における低ELでの例外
 .balign 0x80	// Synchronous
 	HANDLE_CONTEXT_SWITCH handle_user_exception
 
@@ -419,7 +424,7 @@ _default_exceptions_table:
 .balign 0x80	// SError
 	b	_user_exception_fatal
 
-// Exceptions from lower EL in AArch32
+// AArch32における低ELでの例外
 .balign 0x80	// Synchronous
 	b	_kernel_exception_fatal
 
@@ -431,5 +436,3 @@ _default_exceptions_table:
 
 .balign 0x80	// SError
 	b	_kernel_exception_fatal
-
-

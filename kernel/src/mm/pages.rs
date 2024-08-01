@@ -45,6 +45,7 @@ pub fn init_pages_pool(start: PhysicalAddress, end: PhysicalAddress) {
 
 pub fn get_page_pool<'a>() -> &'a mut PagePool {
     unsafe {
+        // FIXME:  ptr::addr_of_mut!(PAGES) に変更せよとのwarinigが出るがとりあえずこのままで
         &mut PAGES
     }
 }
@@ -228,4 +229,3 @@ fn init_desc_table(start: PhysicalAddress, pages: usize) -> &'static mut [Page] 
 fn size_of_desc_table(pages: usize) -> usize {
     pages * mem::size_of::<Page>()
 }
-

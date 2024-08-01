@@ -21,7 +21,7 @@ use ruxpin_kernel::fs::{self, new_vnode, Filesystem, Mount, MountOperations, Vno
 
 
 pub struct ProcFilesystem {
-    
+
 }
 
 struct ProcMount {
@@ -173,7 +173,7 @@ fn file_data_mount(_nothing: &()) -> Result<Vec<u8>, KernelError> {
     let mut data = vec![0; 128];
     let mut writer = SliceWriter::new(data.as_mut_slice());
 
-    fs::for_each_mount(|mount| {
+    fs::for_each_mount(|_mount| {
         // TODO implement mount data
         write!(writer, "a mount\n").map_err(|_| KernelError::IOError)?;
         Ok(())
@@ -222,4 +222,3 @@ fn proc_state(state: TaskState) -> char {
         TaskState::Blocked => 'S',
     }
 }
-

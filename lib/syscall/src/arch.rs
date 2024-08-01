@@ -3,6 +3,7 @@ use core::arch::asm;
 
 use crate::SyscallRequest;
 
+/// システムコールを実行する
 #[cfg(target_arch = "aarch64")]
 #[inline(always)]
 pub fn execute_syscall(syscall: &mut SyscallRequest) {
@@ -27,4 +28,3 @@ pub fn execute_syscall(syscall: &mut SyscallRequest) {
         syscall.error = error != 0;
     }
 }
-

@@ -176,7 +176,7 @@ impl Ext2Vnode {
                         return Err(KernelError::InvalidInode);
                     } else {
                         let locked_buf = &mut *buf.lock_mut();
-                        let mut previous_entry_on_disk: &mut Ext2DirEntryHeader = unsafe {
+                        let previous_entry_on_disk: &mut Ext2DirEntryHeader = unsafe {
                             memory::cast_to_ref_mut(&mut locked_buf[previous_position.unwrap()..])
                         };
 
@@ -223,4 +223,3 @@ fn to_file_type(access: FileAccess) -> u8 {
         _                               => EXT2_FT_UNKNOWN,
     }
 }
-

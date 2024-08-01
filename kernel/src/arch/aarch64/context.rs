@@ -119,6 +119,7 @@ impl Context {
 
     pub fn switch_current_context(new_context: &mut Context) {
         unsafe {
+            // コンテキストを切り替える前にTTBR0を更新し、進行中のシステムコールを再開できるようにする
             // Update TTBR0 before the context switch, so we can restart a syscall in progress
             asm!(
                 "msr     TTBR0_EL1, {ttbr}",
@@ -187,4 +188,3 @@ pub fn cpu_id() -> usize {
         id
     }
 }
-

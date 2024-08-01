@@ -63,4 +63,3 @@ impl Ext2Vnode {
         Ok(offset)
     }
 }
-

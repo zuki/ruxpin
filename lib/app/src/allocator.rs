@@ -41,7 +41,7 @@ unsafe impl GlobalAlloc for Heap {
 
 impl Heap {
     pub unsafe fn malloc(&mut self, mut size: usize) -> *mut u8 {
-        let mut nextfree: *mut Block;
+        let nextfree: *mut Block;
         let mut prev: *mut Block = ptr::null_mut();
         let mut cur: *mut Block = self.free_blocks;
 
@@ -104,7 +104,7 @@ impl Heap {
 
     pub unsafe fn free(&mut self, ptr: *mut u8) {
         let mut prev: *mut Block = ptr::null_mut();
-        let mut block: *mut Block = ptr.cast::<Block>().offset(-1);
+        let block: *mut Block = ptr.cast::<Block>().offset(-1);
         let mut cur: *mut Block = self.free_blocks;
 
         while !cur.is_null() {
@@ -146,4 +146,3 @@ impl Heap {
         }
     }
 }
-
