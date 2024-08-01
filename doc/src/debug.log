@@ -1,0 +1,92 @@
+$ ./qemu.sh
+starting kernel...
+kernel heap: using 0x200000, size 14MiB
+virtual memory: using region at PhysicalAddress(0x1000000), size 240 MiB, pages 61408
+using 32 pages (130560 bytes) for descriptors (ratio of 1920)
+alloc 7680 1, desc 122880 30
+interrupts: initializing generic arm interrupt controller
+fs: registering filesystem devfs
+fs: registering filesystem procfs
+fs: registering filesystem tmpfs
+fs: registering filesystem ext2
+console: initializing
+sd: initializing
+mmc: sending command GoIdle 0
+mmc: sending command SendIfCond 1aa
+mmc: sending command AppCommand 0
+mmc: sending command SendOpCond 51ff8000
+mmc: sending command SendCID 0
+mmc: sending command SendRelAddr 0
+mmc: sending command CardSelect 45670500
+mmc: reading size 0x0 at offset 0x0 into buffer.size 0x400
+sd: found partition 0 at 2000, 256 MiB
+sd: found partition 1 at 82000, 740 MiB
+fs: mounting ext2 at /, device Some(DeviceID(0, 2))
+mmc: sending command GoIdle 0
+mmc: sending command SendIfCond 1aa
+mmc: sending command AppCommand 0
+mmc: sending command SendOpCond 51ff8000
+mmc: sending command SendCID 0
+mmc: sending command SendRelAddr 0
+mmc: sending command CardSelect 45670500
+mmc: reading size 0x2e400000 at offset 0x400 into buffer.size 0x400
+ext2: magic number ef53, block size 4096
+ext2: total blocks 982016, total inodes 245760, unallocated blocks: 964609, unallocated inodes: 245738
+ext2: features compat: 38, ro: 3, incompat: 2
+mmc: reading size 0x2e400000 at offset 0x1000 into buffer.size 0x1000
+mmc: reading size 0x2e400000 at offset 0xf2000 into buffer.size 0x1000
+mmc: reading size 0x2e400000 at offset 0xf3000 into buffer.size 0x1000
+mmc: reading size 0x2e400000 at offset 0x2f3000 into buffer.size 0x1000
+mmc: reading size 0x2e400000 at offset 0xf1000 into buffer.size 0x1000
+mmc: reading size 0x2e400000 at offset 0x2f9000 into buffer.size 0x1000
+ext2: allocating block 761 in group 0
+storing inode 12
+ext2: allocating inode 12
+mmc: reading size 0x2e400000 at offset 0x2fa000 into buffer.size 0x1000
+ext2: allocating block 762 in group 0
+storing inode 13
+ext2: allocating inode 13
+mmc: reading size 0x2e400000 at offset 0x2fb000 into buffer.size 0x1000
+ext2: allocating block 763 in group 0
+storing inode 14
+ext2: allocating inode 14
+fs: mounting devfs at /dev, device None
+ext2: looking for "dev", found inode 12
+ext2: looking for "..", found inode 2
+fs: mounting procfs at /proc, device None
+ext2: looking for "proc", found inode 13
+ext2: looking for "..", found inode 2
+fs: mounting tmpfs at /tmp, device None
+ext2: looking for "tmp", found inode 14
+ext2: looking for "..", found inode 2
+
+Running some hardcoded tests before completing the startup
+
+Creating a directory and a file inside of it
+device DeviceID(0, 2), bm 0x2fc, bs 0x1000
+mmc: reading size 0x2e400000 at offset 0x2fc000 into buffer.size 0x1000
+ext2: allocating block 764 in group 0
+storing inode 15
+ext2: allocating inode 15
+ext2: looking for "testdir", found inode 15
+ext2: looking for "testdir", found inode 15
+storing inode 16
+ext2: allocating inode 16
+device DeviceID(0, 2), bm 0x2fd, bs 0x1000
+mmc: reading size 0x2e400000 at offset 0x2fd000 into buffer.size 0x1000
+ext2: allocating block 765 in group 0
+ext2: writing to block 765
+storing inode 16
+Read file 14: This is a test
+
+Opening the console device file and writing to it
+ext2: looking for "dev", found inode 12
+the device file can write
+
+Opening the shell binary through the vfs interface and reading some data
+ext2: looking for "bin", found inode 98305
+device DeviceID(0, 2), bm 0x60001, bs 0x1000
+mmc: reading size 0x2e400000 at offset 0x60001000 into buffer.size 0x1000
+Rust Panic: panicked at /home/vagrant/ruxpin/drivers/raspberrypi/src/emmc.rs:75:33:
+range end index 18446744072874881024 out of range for slice of length 4096
+qemu-system-aarch64: terminating on signal 2

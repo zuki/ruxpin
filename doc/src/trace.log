@@ -1,0 +1,1771 @@
+$ ./qemu.sh 
+
+starting kernel...
+
+kernel heap: using 0x200000, size 14MiB
+
+virtual memory: using region at PhysicalAddress(0x1000000), size 240 MiB, pages 61408
+
+using 32 pages (130560 bytes) for descriptors (ratio of 1920)
+
+alloc 7680 1, desc 122880 30
+
+interrupts: initializing generic arm interrupt controller
+
+fs: registering filesystem devfs
+
+fs: registering filesystem procfs
+
+fs: registering filesystem tmpfs
+
+fs: registering filesystem ext2
+
+console: initializing
+
+sd: initializing
+
+mmc: sending command GoIdle 0
+
+mmc: sending command SendIfCond 1aa
+
+mmc: sending command AppCommand 0
+
+mmc: sending command SendOpCond 51ff8000
+
+mmc: sending command SendCID 0
+
+mmc: sending command SendRelAddr 0
+
+mmc: sending command CardSelect 45670500
+
+mmc: reading size 0x0 at offset 0x0 into buffer.size 0x400
+
+sd: found partition 0 at 2000, 256 MiB
+
+sd: found partition 1 at 82000, 740 MiB
+
+fs: mounting ext2 at /, device Some(DeviceID(0, 2))
+
+mmc: sending command GoIdle 0
+
+mmc: sending command SendIfCond 1aa
+
+mmc: sending command AppCommand 0
+
+mmc: sending command SendOpCond 51ff8000
+
+mmc: sending command SendCID 0
+
+mmc: sending command SendRelAddr 0
+
+mmc: sending command CardSelect 45670500
+
+mmc: reading size 0x2e400000 at offset 0x400 into buffer.size 0x400
+
+ext2: magic number ef53, block size 4096
+
+ext2: total blocks 982016, total inodes 245760, unallocated blocks: 964609, unallocated inodes: 245738
+
+ext2: features compat: 38, ro: 3, incompat: 2
+
+mmc: reading size 0x2e400000 at offset 0x1000 into buffer.size 0x1000
+
+mmc: reading size 0x2e400000 at offset 0xf2000 into buffer.size 0x1000
+
+mmc: reading size 0x2e400000 at offset 0xf3000 into buffer.size 0x1000
+
+loading inode 2: Ext2InodeOnDisk {
+
+    mode: leu16(
+
+        16877,
+
+    ),
+
+    uid: leu16(
+
+        0,
+
+    ),
+
+    size: leu32(
+
+        4096,
+
+    ),
+
+    atime: leu32(
+
+        1721788535,
+
+    ),
+
+    ctime: leu32(
+
+        1721788549,
+
+    ),
+
+    mtime: leu32(
+
+        1721788549,
+
+    ),
+
+    dtime: leu32(
+
+        0,
+
+    ),
+
+    gid: leu16(
+
+        0,
+
+    ),
+
+    num_links: leu16(
+
+        4,
+
+    ),
+
+    num_blocks: leu32(
+
+        8,
+
+    ),
+
+    flags: leu32(
+
+        0,
+
+    ),
+
+    _reserved1: leu32(
+
+        1,
+
+    ),
+
+    blocks: [
+
+        leu32(
+
+            755,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+    ],
+
+    file_generation: leu32(
+
+        0,
+
+    ),
+
+    file_acl: leu32(
+
+        0,
+
+    ),
+
+    dir_acl: leu32(
+
+        0,
+
+    ),
+
+    fragment_addr: leu32(
+
+        0,
+
+    ),
+
+    fragment_num: 0,
+
+    fragment_size: 0,
+
+    _pad1: leu16(
+
+        0,
+
+    ),
+
+    uid_high: leu16(
+
+        0,
+
+    ),
+
+    gid_high: leu16(
+
+        0,
+
+    ),
+
+    _reserved2: leu32(
+
+        0,
+
+    ),
+
+} FileAttributes {
+
+    access: FileAccess(
+
+        16877,
+
+    ),
+
+    nlinks: 4,
+
+    uid: 0,
+
+    gid: 0,
+
+    rdev: None,
+
+    inode: 2,
+
+    size: 4096,
+
+    atime: Timestamp(
+
+        1721788535,
+
+    ),
+
+    mtime: Timestamp(
+
+        1721788549,
+
+    ),
+
+    ctime: Timestamp(
+
+        1721788549,
+
+    ),
+
+}
+
+mmc: reading size 0x2e400000 at offset 0x2f3000 into buffer.size 0x1000
+
+mmc: reading size 0x2e400000 at offset 0xf1000 into buffer.size 0x1000
+
+mmc: reading size 0x2e400000 at offset 0x2f9000 into buffer.size 0x1000
+
+ext2: allocating block 761 in group 0
+
+storing inode 12
+
+inode as written 12: Ext2InodeOnDisk {
+
+    mode: leu16(
+
+        16877,
+
+    ),
+
+    uid: leu16(
+
+        0,
+
+    ),
+
+    size: leu32(
+
+        4096,
+
+    ),
+
+    atime: leu32(
+
+        0,
+
+    ),
+
+    ctime: leu32(
+
+        0,
+
+    ),
+
+    mtime: leu32(
+
+        0,
+
+    ),
+
+    dtime: leu32(
+
+        0,
+
+    ),
+
+    gid: leu16(
+
+        0,
+
+    ),
+
+    num_links: leu16(
+
+        1,
+
+    ),
+
+    num_blocks: leu32(
+
+        0,
+
+    ),
+
+    flags: leu32(
+
+        0,
+
+    ),
+
+    _reserved1: leu32(
+
+        0,
+
+    ),
+
+    blocks: [
+
+        leu32(
+
+            761,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+    ],
+
+    file_generation: leu32(
+
+        0,
+
+    ),
+
+    file_acl: leu32(
+
+        0,
+
+    ),
+
+    dir_acl: leu32(
+
+        0,
+
+    ),
+
+    fragment_addr: leu32(
+
+        0,
+
+    ),
+
+    fragment_num: 0,
+
+    fragment_size: 0,
+
+    _pad1: leu16(
+
+        0,
+
+    ),
+
+    uid_high: leu16(
+
+        0,
+
+    ),
+
+    gid_high: leu16(
+
+        0,
+
+    ),
+
+    _reserved2: leu32(
+
+        0,
+
+    ),
+
+}
+
+ext2: allocating inode 12
+
+mmc: reading size 0x2e400000 at offset 0x2fa000 into buffer.size 0x1000
+
+ext2: allocating block 762 in group 0
+
+storing inode 13
+
+inode as written 13: Ext2InodeOnDisk {
+
+    mode: leu16(
+
+        16877,
+
+    ),
+
+    uid: leu16(
+
+        0,
+
+    ),
+
+    size: leu32(
+
+        4096,
+
+    ),
+
+    atime: leu32(
+
+        0,
+
+    ),
+
+    ctime: leu32(
+
+        0,
+
+    ),
+
+    mtime: leu32(
+
+        0,
+
+    ),
+
+    dtime: leu32(
+
+        0,
+
+    ),
+
+    gid: leu16(
+
+        0,
+
+    ),
+
+    num_links: leu16(
+
+        1,
+
+    ),
+
+    num_blocks: leu32(
+
+        0,
+
+    ),
+
+    flags: leu32(
+
+        0,
+
+    ),
+
+    _reserved1: leu32(
+
+        0,
+
+    ),
+
+    blocks: [
+
+        leu32(
+
+            762,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+    ],
+
+    file_generation: leu32(
+
+        0,
+
+    ),
+
+    file_acl: leu32(
+
+        0,
+
+    ),
+
+    dir_acl: leu32(
+
+        0,
+
+    ),
+
+    fragment_addr: leu32(
+
+        0,
+
+    ),
+
+    fragment_num: 0,
+
+    fragment_size: 0,
+
+    _pad1: leu16(
+
+        0,
+
+    ),
+
+    uid_high: leu16(
+
+        0,
+
+    ),
+
+    gid_high: leu16(
+
+        0,
+
+    ),
+
+    _reserved2: leu32(
+
+        0,
+
+    ),
+
+}
+
+ext2: allocating inode 13
+
+mmc: reading size 0x2e400000 at offset 0x2fb000 into buffer.size 0x1000
+
+ext2: allocating block 763 in group 0
+
+storing inode 14
+
+inode as written 14: Ext2InodeOnDisk {
+
+    mode: leu16(
+
+        16877,
+
+    ),
+
+    uid: leu16(
+
+        0,
+
+    ),
+
+    size: leu32(
+
+        4096,
+
+    ),
+
+    atime: leu32(
+
+        0,
+
+    ),
+
+    ctime: leu32(
+
+        0,
+
+    ),
+
+    mtime: leu32(
+
+        0,
+
+    ),
+
+    dtime: leu32(
+
+        0,
+
+    ),
+
+    gid: leu16(
+
+        0,
+
+    ),
+
+    num_links: leu16(
+
+        1,
+
+    ),
+
+    num_blocks: leu32(
+
+        0,
+
+    ),
+
+    flags: leu32(
+
+        0,
+
+    ),
+
+    _reserved1: leu32(
+
+        0,
+
+    ),
+
+    blocks: [
+
+        leu32(
+
+            763,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+    ],
+
+    file_generation: leu32(
+
+        0,
+
+    ),
+
+    file_acl: leu32(
+
+        0,
+
+    ),
+
+    dir_acl: leu32(
+
+        0,
+
+    ),
+
+    fragment_addr: leu32(
+
+        0,
+
+    ),
+
+    fragment_num: 0,
+
+    fragment_size: 0,
+
+    _pad1: leu16(
+
+        0,
+
+    ),
+
+    uid_high: leu16(
+
+        0,
+
+    ),
+
+    gid_high: leu16(
+
+        0,
+
+    ),
+
+    _reserved2: leu32(
+
+        0,
+
+    ),
+
+}
+
+ext2: allocating inode 14
+
+fs: mounting devfs at /dev, device None
+
+ext2: looking for "dev", found inode 12
+
+ext2: looking for "..", found inode 2
+
+fs: mounting procfs at /proc, device None
+
+ext2: looking for "proc", found inode 13
+
+ext2: looking for "..", found inode 2
+
+fs: mounting tmpfs at /tmp, device None
+
+ext2: looking for "tmp", found inode 14
+
+ext2: looking for "..", found inode 2
+
+
+
+Running some hardcoded tests before completing the startup
+
+
+
+Creating a directory and a file inside of it
+
+mmc: reading size 0x2e400000 at offset 0x2fc000 into buffer.size 0x1000
+
+ext2: allocating block 764 in group 0
+
+storing inode 15
+
+inode as written 15: Ext2InodeOnDisk {
+
+    mode: leu16(
+
+        16877,
+
+    ),
+
+    uid: leu16(
+
+        0,
+
+    ),
+
+    size: leu32(
+
+        4096,
+
+    ),
+
+    atime: leu32(
+
+        0,
+
+    ),
+
+    ctime: leu32(
+
+        0,
+
+    ),
+
+    mtime: leu32(
+
+        0,
+
+    ),
+
+    dtime: leu32(
+
+        0,
+
+    ),
+
+    gid: leu16(
+
+        0,
+
+    ),
+
+    num_links: leu16(
+
+        1,
+
+    ),
+
+    num_blocks: leu32(
+
+        0,
+
+    ),
+
+    flags: leu32(
+
+        0,
+
+    ),
+
+    _reserved1: leu32(
+
+        0,
+
+    ),
+
+    blocks: [
+
+        leu32(
+
+            764,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+    ],
+
+    file_generation: leu32(
+
+        0,
+
+    ),
+
+    file_acl: leu32(
+
+        0,
+
+    ),
+
+    dir_acl: leu32(
+
+        0,
+
+    ),
+
+    fragment_addr: leu32(
+
+        0,
+
+    ),
+
+    fragment_num: 0,
+
+    fragment_size: 0,
+
+    _pad1: leu16(
+
+        0,
+
+    ),
+
+    uid_high: leu16(
+
+        0,
+
+    ),
+
+    gid_high: leu16(
+
+        0,
+
+    ),
+
+    _reserved2: leu32(
+
+        0,
+
+    ),
+
+}
+
+ext2: allocating inode 15
+
+ext2: looking for "testdir", found inode 15
+
+ext2: looking for "testdir", found inode 15
+
+storing inode 16
+
+inode as written 16: Ext2InodeOnDisk {
+
+    mode: leu16(
+
+        420,
+
+    ),
+
+    uid: leu16(
+
+        0,
+
+    ),
+
+    size: leu32(
+
+        0,
+
+    ),
+
+    atime: leu32(
+
+        0,
+
+    ),
+
+    ctime: leu32(
+
+        0,
+
+    ),
+
+    mtime: leu32(
+
+        0,
+
+    ),
+
+    dtime: leu32(
+
+        0,
+
+    ),
+
+    gid: leu16(
+
+        0,
+
+    ),
+
+    num_links: leu16(
+
+        1,
+
+    ),
+
+    num_blocks: leu32(
+
+        0,
+
+    ),
+
+    flags: leu32(
+
+        0,
+
+    ),
+
+    _reserved1: leu32(
+
+        0,
+
+    ),
+
+    blocks: [
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+    ],
+
+    file_generation: leu32(
+
+        0,
+
+    ),
+
+    file_acl: leu32(
+
+        0,
+
+    ),
+
+    dir_acl: leu32(
+
+        0,
+
+    ),
+
+    fragment_addr: leu32(
+
+        0,
+
+    ),
+
+    fragment_num: 0,
+
+    fragment_size: 0,
+
+    _pad1: leu16(
+
+        0,
+
+    ),
+
+    uid_high: leu16(
+
+        0,
+
+    ),
+
+    gid_high: leu16(
+
+        0,
+
+    ),
+
+    _reserved2: leu32(
+
+        0,
+
+    ),
+
+}
+
+ext2: allocating inode 16
+
+mmc: reading size 0x2e400000 at offset 0x2fd000 into buffer.size 0x1000
+
+ext2: allocating block 765 in group 0
+
+ext2: writing to block 765
+
+storing inode 16
+
+inode as written 16: Ext2InodeOnDisk {
+
+    mode: leu16(
+
+        420,
+
+    ),
+
+    uid: leu16(
+
+        0,
+
+    ),
+
+    size: leu32(
+
+        14,
+
+    ),
+
+    atime: leu32(
+
+        0,
+
+    ),
+
+    ctime: leu32(
+
+        0,
+
+    ),
+
+    mtime: leu32(
+
+        0,
+
+    ),
+
+    dtime: leu32(
+
+        0,
+
+    ),
+
+    gid: leu16(
+
+        0,
+
+    ),
+
+    num_links: leu16(
+
+        1,
+
+    ),
+
+    num_blocks: leu32(
+
+        0,
+
+    ),
+
+    flags: leu32(
+
+        0,
+
+    ),
+
+    _reserved1: leu32(
+
+        0,
+
+    ),
+
+    blocks: [
+
+        leu32(
+
+            765,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+        leu32(
+
+            0,
+
+        ),
+
+    ],
+
+    file_generation: leu32(
+
+        0,
+
+    ),
+
+    file_acl: leu32(
+
+        0,
+
+    ),
+
+    dir_acl: leu32(
+
+        0,
+
+    ),
+
+    fragment_addr: leu32(
+
+        0,
+
+    ),
+
+    fragment_num: 0,
+
+    fragment_size: 0,
+
+    _pad1: leu16(
+
+        0,
+
+    ),
+
+    uid_high: leu16(
+
+        0,
+
+    ),
+
+    gid_high: leu16(
+
+        0,
+
+    ),
+
+    _reserved2: leu32(
+
+        0,
+
+    ),
+
+}
+
+Read file 14: This is a test
+
+
+
+Opening the console device file and writing to it
+
+ext2: looking for "dev", found inode 12
+
+the device file can write
+
+
+
+Opening the shell binary through the vfs interface and reading some data
+
+ext2: looking for "bin", found inode 98305
+
+mmc: reading size 0x2e400000 at offset 0x60001000 into buffer.size 0x1000
+
+Rust Panic: panicked at /home/vagrant/ruxpin/drivers/raspberrypi/src/emmc.rs:76:33:
+
+range end index 18446744072874881024 out of range for slice of length 4096
+
+
+
+
