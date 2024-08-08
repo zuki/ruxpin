@@ -10,7 +10,6 @@ use crate::errors::KernelError;
 
 use super::types::{Filesystem, Mount, Vnode, File, FilePointer, FileAttributes};
 
-
 static FILESYSTEMS: Spinlock<Vec<Arc<Spinlock<dyn Filesystem>>>> = Spinlock::new(Vec::new());
 static MOUNTPOINTS: Spinlock<Vec<Mount>> = Spinlock::new(Vec::new());
 static ROOT_NODE: Spinlock<Option<Vnode>> = Spinlock::new(None);
@@ -214,6 +213,8 @@ pub fn read(file: File, buffer: &mut [u8]) -> Result<usize, KernelError> {
 }
 
 pub fn write(file: File, buffer: &[u8]) -> Result<usize, KernelError> {
+    //FIXME このデバッグプリントぉ入れないとprint!, println!が動かない
+    notice!("\n{:?}", buffer);
     let mut fptr = file.lock();
     let vnode = fptr.vnode.clone();
     let result = vnode.lock().write(&mut *fptr, buffer)?;
