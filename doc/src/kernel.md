@@ -7,11 +7,15 @@
     - コア0とそれ以外で処理を分けているが、EL1に移行し、MMUを有効にして
       Rustの各々の開始コードにジャンプしている
 - `start.s`からジャンプするのは
-    - コア0は`kernel/src/lib/lib.rs#boot_core_start()`
+    - コア0は`kernel/src/lib.rs#boot_core_start()`
     - それ以外はコア0は`kernel/src/lib/lib.rs#non_boot_core_start()`
-- Rustの開始コードでは
-    - コア0は`register_devices()` (config/raspberrypi3/src/main.rs)を実行して、初期化済みフラグをオンに、`start_multitasking()`(kernel/src/arch/aarch64/context.rs)を実行
-    - 祖霊母初期化済みフラグが音になるまで待機して`arch::loop_forever()`を実行（現在は`wfe`しているだけ）
+- `boot_core_start()`
+    - `register_devices()`: (config/raspberrypi3/src/main.rs) を実行
+    - 初期化済みフラグをオン
+    - `start_multitasking()`(kernel/src/arch/aarch64/context.rs)を実行
+- `non_boot_core_start()`
+    - 初期化済みフラグが音になるまで待機
+    - `arch::loop_forever()`を実行（現在は`wfe`しているだけ）
 
 ## 物理メモリマップ
 
