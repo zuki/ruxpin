@@ -1,11 +1,11 @@
 set architecture aarch64
-file target/aarch64-unknown-none/release/ruxpin
+file target/aarch64-unknown-none/debug/ruxpin
 target remote localhost:1234
 set print pretty on
 set logging off
 set height 0
 
-break proc.c:235
+#break main.rs
 
 #break usb/standardhub.c:220
 
