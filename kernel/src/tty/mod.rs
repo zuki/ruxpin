@@ -13,7 +13,7 @@ use crate::errors::KernelError;
 mod canonical;
 use self::canonical::CanonicalReader;
 
-
+/// キャラクタ型デバイスのOPSトレイト
 pub trait CharOperations: Sync + Send {
     fn open(&mut self, mode: OpenFlags) -> Result<(), KernelError>;
     fn close(&mut self) -> Result<(), KernelError>;
@@ -24,31 +24,36 @@ pub trait CharOperations: Sync + Send {
     //offset_t (*seek)(devminor_t minor, offset_t position, int whence, offset_t offset);
 }
 
+/// キャラクタ型デバイスドライバ構造体
 pub struct CharDriver {
     prefix: &'static str,
     devices: Vec<TtyDevice>,
 }
 
+/// TTYデバイス構造体
 pub struct TtyDevice {
     dev: Box<dyn CharOperations>,
     reader: Option<CanonicalReader>,
 }
 
+/// TTYドライバリスト (Singleton)
 static TTY_DRIVERS: Spinlock<Vec<CharDriver>> = Spinlock::new(Vec::new());
 
-
+/// ttyドライバの登録
 pub fn register_tty_driver(prefix: &'static str) -> Result<DriverID, KernelError> {
     let driver_id = TTY_DRIVERS.lock().len() as DriverID;
     TTY_DRIVERS.lock().push(CharDriver::new(prefix));
     Ok(driver_id)
 }
 
+/// ttyドライバにデバイス(ops)を登録
 pub fn register_tty_device(driver_id: DriverID, dev: Box<dyn CharOperations>) -> Result<MinorDeviceID, KernelError> {
     let mut drivers_list = TTY_DRIVERS.lock();
     let driver = drivers_list.get_mut(driver_id as usize).ok_or(KernelError::NoSuchDevice)?;
     driver.add_device(dev)
 }
 
+/// デバイス名のprefixでデバイスを検索
 pub fn lookup_device(name: &str) -> Result<DeviceID, KernelError> {
     let drivers_list = TTY_DRIVERS.lock();
     for (driver_id, driver) in drivers_list.iter().enumerate() {
@@ -63,19 +68,21 @@ pub fn lookup_device(name: &str) -> Result<DeviceID, KernelError> {
     Err(KernelError::NoSuchDevice)
 }
 
-
+/// デバイスをオープン
 pub fn open(device_id: DeviceID, mode: OpenFlags) -> Result<(), KernelError> {
     let mut drivers_list = TTY_DRIVERS.lock();
     let device = get_device(&mut *drivers_list, device_id)?;
     device.dev.open(mode)
 }
 
+/// デバイスをクローズ
 pub fn close(device_id: DeviceID) -> Result<(), KernelError> {
     let mut drivers_list = TTY_DRIVERS.lock();
     let device = get_device(&mut *drivers_list, device_id)?;
     device.dev.close()
 }
 
+/// デバイスをRead（デバイスのread関数でread）
 #[allow(dead_code)]
 pub(crate) fn read_raw(device_id: DeviceID, buffer: &mut [u8]) -> Result<usize, KernelError> {
     let mut drivers_list = TTY_DRIVERS.lock();
@@ -83,6 +90,8 @@ pub(crate) fn read_raw(device_id: DeviceID, buffer: &mut [u8]) -> Result<usize, 
     device.dev.read(buffer)
 }
 
+/// デバイスをRead（デバイスのreaderのread関数でread）.
+/// 読み込むべきデータが無かった場合はカレントタスクをsuspend
 pub fn read(device_id: DeviceID, buffer: &mut [u8]) -> Result<usize, KernelError> {
     let mut drivers_list = TTY_DRIVERS.lock();
     let device = get_device(&mut *drivers_list, device_id)?;
@@ -93,6 +102,7 @@ pub fn read(device_id: DeviceID, buffer: &mut [u8]) -> Result<usize, KernelError
         device.dev.read(buffer)?
     };
 
+    // 読み込むべきデータが無かった場合はカレントタスクをsuspend
     if nbytes == 0 {
         let current = scheduler::get_current();
         tasklets::schedule(Box::new(move || {
@@ -104,12 +114,14 @@ pub fn read(device_id: DeviceID, buffer: &mut [u8]) -> Result<usize, KernelError
     Ok(nbytes)
 }
 
+/// デバイスにwrite
 pub fn write(device_id: DeviceID, buffer: &[u8]) -> Result<usize, KernelError> {
     let mut drivers_list = TTY_DRIVERS.lock();
     let device = get_device(&mut *drivers_list, device_id)?;
     device.dev.write(buffer)
 }
 
+/// デバイスのreaderを再スケジュール
 pub fn schedule_update(device_id: DeviceID) {
     tasklets::schedule(Box::new(move || {
         let mut drivers_list = TTY_DRIVERS.lock();
@@ -121,6 +133,7 @@ pub fn schedule_update(device_id: DeviceID) {
     }));
 }
 
+/// readerの読み込みを再開
 fn process_input(reader: &mut CanonicalReader, dev: &mut dyn CharOperations) -> Result<(), KernelError> {
     let mut ch = [0; 1];
     while dev.read(&mut ch)? > 0 {
@@ -132,6 +145,7 @@ fn process_input(reader: &mut CanonicalReader, dev: &mut dyn CharOperations) -> 
     Ok(())
 }
 
+/// device_diのデバイスを取得
 fn get_device(drivers_list: &mut Vec<CharDriver>, device_id: DeviceID) -> Result<&mut TtyDevice, KernelError> {
     let DeviceID(driver_id, subdevice_id) = device_id;
     let driver = drivers_list.get_mut(driver_id as usize).ok_or(KernelError::NoSuchDevice)?;
@@ -139,7 +153,7 @@ fn get_device(drivers_list: &mut Vec<CharDriver>, device_id: DeviceID) -> Result
     Ok(device)
 }
 
-
+/// キャラクタ型デバイスドライバの実装
 impl CharDriver {
     pub const fn new(prefix: &'static str) -> Self {
         Self {
@@ -155,6 +169,7 @@ impl CharDriver {
     }
 }
 
+/// TTYデバイスの実装
 impl TtyDevice {
     pub fn new(dev: Box<dyn CharOperations>) -> Self {
         Self {

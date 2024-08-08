@@ -31,6 +31,7 @@ use ruxpin_filesystems_tmpfs::TmpFilesystem;
 use ruxpin_filesystems_ext2::Ext2Filesystem;
 
 
+// デバイスの登録: 起動の最初期にboot_core_start()から呼ばれる
 #[no_mangle]
 pub fn register_devices() -> Result<(), KernelError> {
     console::set_safe_console();
@@ -69,10 +70,11 @@ pub fn register_devices() -> Result<(), KernelError> {
 
     startup_tests().unwrap();
 
-    // Create the first process
+    // 最初のプロセスを作成（task_id=2)
     notice!("loading the first processs (/bin/sh) from elf binary file");
     binaries::load_process("/bin/sh").unwrap();
 
+    // システムタイマーの初期化（割り込み番号は1）
     SystemTimer::init(1);
 
     notice!("kernel initialization complete");

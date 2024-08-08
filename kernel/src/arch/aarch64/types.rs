@@ -56,6 +56,7 @@ impl PhysicalAddress {
         Self(self.0 + offset as u64)
     }
 
+    /// カーネル仮想アドレスに変換
     pub fn to_kernel_addr(self) -> KernelVirtualAddress {
         KernelVirtualAddress::from(self)
     }
@@ -116,12 +117,14 @@ impl VirtualAddress {
 
 
 impl From<PhysicalAddress> for KernelVirtualAddress {
+    /// 物理アドレスをカーネル仮想アドレスに変換
     fn from(addr: PhysicalAddress) -> Self {
         Self(addr.0 | kernel_virtual_base_addr())
     }
 }
 
 impl From<KernelVirtualAddress> for PhysicalAddress {
+    /// カーネル仮想アドレスを物理アドレスに変換
     fn from(addr: KernelVirtualAddress) -> Self {
         Self(addr.0 & !kernel_virtual_base_addr())
     }

@@ -4,10 +4,10 @@ use core::ptr;
 use core::marker::PhantomData;
 use crate::arch::KernelVirtualAddress;
 
-
+/// デバイスレジスタ構造体: デバイスのアドレスを格納する
 pub struct DeviceRegisters<T> {
-    base: KernelVirtualAddress,
-    data: PhantomData<T>,
+    base: KernelVirtualAddress,     // デバイスのベースアドレス
+    data: PhantomData<T>,           // デバイスを区別する
 }
 
 impl<T> DeviceRegisters<T> {

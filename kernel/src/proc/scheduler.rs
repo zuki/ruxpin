@@ -10,21 +10,25 @@ use crate::errors::KernelError;
 use crate::arch::{self, Context, VirtualAddress};
 use crate::misc::queue::{Queue, QueueNode, QueueNodeRef};
 use crate::sync::Spinlock;
+//use crate::debug;
 
 use super::tasks::{TaskCloneArgs, TaskState, TaskRecord};
 
 
 pub type Task = QueueNodeRef<TaskRecord>;
 
+/// タスクマネージャ構造体
 struct TaskManager {
-    tasks: Vec<QueueNodeRef<TaskRecord>>,
-    scheduled: Queue<TaskRecord>,
-    blocked: Queue<TaskRecord>,
+    tasks: Vec<QueueNodeRef<TaskRecord>>,   // タスクリスト
+    scheduled: Queue<TaskRecord>,           // 準備OKリスト
+    blocked: Queue<TaskRecord>,             // ブロック中リスト
 }
 
+/// タスクマネージャシングルトン
 static TASK_MANAGER: Spinlock<TaskManager> = Spinlock::new(TaskManager::new());
 
 pub fn initialize() -> Result<(), KernelError> {
+    // アイドルタスクの追加（”idle”タスクがtask_id=1）
     TASK_MANAGER.lock().create_kernel_task("idle", idle_task)?;
 
     // NOTE this ensures the context is set before we start multitasking
@@ -32,12 +36,14 @@ pub fn initialize() -> Result<(), KernelError> {
     Ok(())
 }
 
+/// アイドルタスクの実体（wfeによる無限ループ）
 fn idle_task() {
     arch::loop_forever();
 }
 
-
+/// タスクマネージャの実装
 impl TaskManager {
+    /// タスクマネージャを新規作成
     const fn new() -> Self {
         Self {
             tasks: Vec::new(),
@@ -46,6 +52,8 @@ impl TaskManager {
         }
     }
 
+    /// タスクを新規作成
+    /// parentを親にタスクを新規作成して、タスクリストと準備OKリスト（末尾）に追加
     pub fn create_task(&mut self, parent: Option<Task>) -> Task {
         let task = QueueNode::new(TaskRecord::new(parent));
         self.tasks.push(task.clone());
@@ -53,6 +61,7 @@ impl TaskManager {
         task
     }
 
+    /// カーネルタスクを新規作成
     fn create_kernel_task(&mut self, name: &str, entry: fn()) -> Result<(), KernelError> {
         let task = QueueNode::new(TaskRecord::initial_kernel_task(name));
         self.tasks.push(task.clone());
@@ -64,7 +73,7 @@ impl TaskManager {
         Ok(())
     }
 
-
+    /// タスクID tidのタスクを取得
     pub fn get_task(&mut self, tid: Tid) -> Option<Task> {
         for task in self.tasks.iter() {
             if task.try_lock().unwrap().task_id == tid {
@@ -74,11 +83,13 @@ impl TaskManager {
         None
     }
 
+    /// プロセスID pidのプロセスを取得
     pub fn get_process(&mut self, pid: Pid) -> Option<Task> {
-        // The main thread will have tid == pid
+        // メインスレッドは tid == pid
         self.get_task(pid)
     }
 
+    /// タスクリストのインデックス slotのタスクを取得
     pub fn get_slot(&mut self, slot: usize) -> Option<Task> {
         if slot < self.tasks.len() {
             Some(self.tasks[slot].clone())
@@ -87,10 +98,12 @@ impl TaskManager {
         }
     }
 
+    /// タスクリストの長さを返す
     pub fn slot_len(&mut self) -> usize {
         self.tasks.len()
     }
 
+    /// カレントタスクを取得
     pub fn get_current(&mut self) -> Task {
         if self.scheduled.get_head().is_none() {
             panic!("no scheduled tasks when looking for the current process");
@@ -102,15 +115,19 @@ impl TaskManager {
     fn set_current_context(&mut self) -> Task {
         let new_current = self.get_current();
         Context::switch_current_context(&mut new_current.try_lock().unwrap().context);
+        //debug!("context swith to {}", &new_current.try_lock().unwrap().task_id);
         new_current
     }
 
+    /// コンテキストスイッチ
     fn schedule(&mut self) {
         let current = self.get_current();
 
+        //debug!("context swith from {}", &current.try_lock().unwrap().task_id);
+        // カレントタスクを準備中リストの末尾に移動する
         self.scheduled.remove_node(current.clone());
         self.scheduled.insert_tail(current);
-
+        // 新たな先頭のタスクをカレントタスクにする
         self.set_current_context();
     }
 
@@ -118,7 +135,8 @@ impl TaskManager {
         // also take an "event" arg
         // TODO actually you need an event to block on, and you could just put it in the process, but you... I supposed... could just
         // allocate the list nodes as needed and not have a vec (would mean a bunch of boxes, but that's ok... but also kinda implies the alloc::linked_list impl
-
+        // taskがカレントタスクの場合、準備OKリストから削除して、
+        // ブロック中リストの先頭に挿入
         if task.try_lock().unwrap().state == TaskState::Running {
             task.try_lock().unwrap().state = TaskState::Blocked;
             self.scheduled.remove_node(task.clone());
@@ -128,6 +146,7 @@ impl TaskManager {
         self.set_current_context();
     }
 
+    /// syscallでブロックしているタスクを再開
     fn restart_blocked_by_syscall(&mut self, function: SyscallFunction) {
         for task in self.blocked.iter() {
             if task.try_lock().unwrap().syscall.function == function {
@@ -143,6 +162,7 @@ impl TaskManager {
         self.set_current_context();
     }
 
+    /// taskをexitモードにして、準備OKリストから削除
     fn detach(&mut self, task: Task) {
         if task.try_lock().unwrap().state != TaskState::Exited {
             task.try_lock().unwrap().state = TaskState::Exited;

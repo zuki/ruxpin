@@ -52,7 +52,7 @@ fn normal_console_print(s: &str) {
     }
 }
 
-
+/// PL011デバイス構造体
 pub struct PL011Device {
     opens: u32,
 }
@@ -107,6 +107,7 @@ impl CharOperations for PL011Device {
     }
 }
 
+// PL011: マニュアル13章 UAERを参照
 const PL011_IRQ: usize = 57;
 const PL011: DeviceRegisters<u32> = DeviceRegisters::new(KernelVirtualAddress::new(0x3F20_1000));
 
@@ -139,12 +140,13 @@ const PL011_INT_ALL: u32                = 0x3FF;
 
 const PL011_RX_QUEUE_SIZE: usize        = 32;
 
-
+/// PL011を初期化する
 fn init() {
     unsafe {
+        // 割り込みを無効に
         irqs::disable_irq(PL011_IRQ);
 
-        // Disable UART
+        // UARTのすべての機能を無効に
         PL011.set(registers::CONTROL, 0);
 
         // Clear all interrupt flags
@@ -156,16 +158,19 @@ fn init() {
         let lcr = PL011.get(registers::LINE_CONTROL);
         PL011.set(registers::LINE_CONTROL, lcr & !PL011_LC_FIFO_ENABLE);
 
+        // ボーレートを921_600に設定
         // Set the speed to 921_600 baud (to match MiniLoad from https://github.com/rust-embedded/rust-raspberrypi-OS-tutorials)
         PL011.set(registers::BAUD_INTEGER, 3);
         PL011.set(registers::BAUD_FRACTIONAL, 16);
 
+        // FIFOを使用する
         // Enable FIFO and configure for 8 bits, 1 stop bit, no parity
         PL011.set(registers::LINE_CONTROL, (0b11 << 5) | PL011_LC_FIFO_ENABLE);
 
-        // Enable UART (TX only)
+        // Enable UART
         PL011.set(registers::CONTROL, PL011_CTL_UART_ENABLE | PL011_CTL_TX_ENABLE | PL011_CTL_RX_ENABLE);
 
+        // 受診割り込みを設定: ハンドラは handle_irq_pl011
         // Enable the RX interrupt
         PL011.set(registers::INTERRUPT_MASK, PL011_INT_RX_READY);
         irqs::register_irq(PL011_IRQ, handle_irq_pl011).unwrap();
@@ -173,6 +178,7 @@ fn init() {
     }
 }
 
+/// PL011に1文字書き出し（書き出し完了までブロック）
 fn put_char(byte: u8) {
     unsafe {
         while (PL011.get(registers::FLAGS) & PL011_FLAGS_TX_FIFO_FULL) != 0 { }
@@ -180,6 +186,7 @@ fn put_char(byte: u8) {
     }
 }
 
+/// PL011から1文字取得（ブロックしない）
 fn get_char() -> Option<u8> {
     unsafe {
         if PL011.get(registers::FLAGS) & PL011_FLAGS_RX_FIFO_EMPTY == 0 {
@@ -203,7 +210,7 @@ fn flush() {
     }
 }
 
-
+/// PL011受診バッファ構造体
 struct PL011Rx {
     buffer: VecDeque<u8>,
 }
@@ -220,11 +227,14 @@ impl PL011Rx {
     }
 }
 
+/// 受信割り込みのハンドラ
 pub fn handle_irq_pl011() {
     unsafe {
+        // 割り込みフラグのクリア
         let status = PL011.get(registers::INTERRUPT_STATUS);
         PL011.set(registers::INTERRUPT_CLEAR, PL011_INT_ALL);
 
+        // 受診準備OK
         if status & PL011_INT_RX_READY != 0 {
             while let Some(ch) = get_char() {
                 //crate::debug!(">>> {}", ch);

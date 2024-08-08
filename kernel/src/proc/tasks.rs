@@ -46,6 +46,7 @@ pub enum TaskState {
 }
 
 // TODO I don't like that these are all pub... I might need to either isolate this more or change how things interact with tasks
+/// タスクレコード構造体
 pub struct TaskRecord {
     // Immutable Data
     pub task_id: Tid,

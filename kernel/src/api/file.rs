@@ -5,6 +5,7 @@ use ruxpin_syscall_proc::syscall_handler;
 use crate::proc::scheduler;
 use crate::fs::{self, Vnode};
 use crate::errors::KernelError;
+//use crate::debug;
 
 
 #[syscall_handler]
@@ -42,6 +43,13 @@ pub fn syscall_read(file: FileDesc, buffer: &mut [u8]) -> Result<usize, KernelEr
 pub fn syscall_write(file: FileDesc, buffer: &[u8]) -> Result<usize, KernelError> {
     let file = scheduler::get_current().try_lock()?.files.try_lock()?.get_file(file)?;
     fs::write(file, buffer)
+    //debug!("syscall_write: get_file ok"); 
+    // このfs::write()からもどってこない
+    //let result = fs::write(file, buffer);
+    //match result {
+    //    Ok(size) => {debug!("syscall_write: size = {}", size); return Ok(size)}
+    //   Err(e) => {debug!("syscall_weite: write error"); return Err(e)}
+    //}
 }
 
 #[syscall_handler]

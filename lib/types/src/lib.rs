@@ -18,6 +18,7 @@ pub enum Seek {
 
 pub type DriverID = u8;
 pub type MinorDeviceID = u8;
+/// デバイスID構造体
 #[derive(Copy, Clone, Debug, PartialEq, PartialOrd)]
 pub struct DeviceID(pub DriverID, pub MinorDeviceID);
 

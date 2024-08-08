@@ -66,6 +66,7 @@ pub fn get_page_slice(page: PhysicalAddress) -> &'static mut [u8] {
 }
 
 impl TranslationTable {
+    /// レベル0カーネルテーブルを返す
     pub fn initial_kernel_table() -> Self {
         use core::arch::asm;
 
