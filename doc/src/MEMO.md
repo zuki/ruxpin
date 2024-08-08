@@ -653,3 +653,491 @@ timer: initializing generic arm timer to trigger context switch
 kernel initialization complete
 scheduler: starting multitasking
 ```
+
+
+
+```sh
+loading the first processs (/bin/sh) from elf binary file
+pages: allocating page at 0x1020000
+ext2: looking for "bin", found inode 180225
+ext2: looking for "sh", found inode 180226
+ext2: looking for "bin", found inode 180225
+ext2: looking for "sh", found inode 180226
+pages: allocating page at 0x1021000
+pages: incrementing page ref at 0x1021000
+pages: incrementing page ref at 0x1021000
+program segment 0: 6 4 offset: 40 v:200040 p:200040 size: 150
+program segment 1: 1 4 offset: 0 v:200000 p:200000 size: 1894
+pages: allocating page at 0x1022000
+pages: allocating page at 0x1023000
+pages: allocating page at 0x1024000
+program segment 2: 1 5 offset: 18a0 v:2118a0 p:2118a0 size: 5e70
+program segment 3: 1 6 offset: 7710 v:227710 p:227710 size: 30
+program segment 4: 6474e550 4 offset: 1850 v:201850 p:201850 size: 14
+program segment 5: 6474e551 6 offset: 0 v:0 p:0 size: 0
+pages: allocating page at 0x1025000
+pages: allocating page at 0x1026000
+pages: allocating page at 0x1027000
+load process /bin/sh (2)
+ext2: looking for "dev", found inode 12
+timer: initializing generic arm timer to trigger context switch
+kernel initialization complete
+scheduler: starting multitasking
+context swith from 1
+context swith to 2
+Handle a user exception of ESR: 8200000b from ELR: 213410
+Instruction or Data Abort 8200000b caused by Access Flag at address 213410 (allocating new page)
+pages: allocating page at 0x1028000
+pages: incrementing page ref at 0x1028000
+Handle a user exception of ESR: 9200004b from ELR: 213418
+Instruction or Data Abort 9200004b caused by Access Flag at address 227710 (allocating new page)
+pages: allocating page at 0x1029000
+pages: incrementing page ref at 0x1029000
+Handle a user exception of ESR: 9200004f from ELR: 213418
+Instruction or Data Abort 9200004f caused by Permissions Flag at address 227710 (either copy-on-write or fault)
+copying page on write PhysicalAddress(0x1029000)
+pages: allocating page at 0x102a000
+pages: decrementing page ref at 1029000
+Handle a user exception of ESR: 8200000b from ELR: 212380
+Instruction or Data Abort 8200000b caused by Access Flag at address 212380 (allocating new page)
+pages: allocating page at 0x102b000
+pages: incrementing page ref at 0x102b000
+Handle a user exception of ESR: 56000001 from ELR: 213af8   # syscall
+A SYSCALL for Write!
+```
+
+## システムコールが動いていいない?
+
+```sh
+$ objdump -d bin/sh/target/aarch64-unknown-none/release/sh
+  213ae0:       f9400000        ldr     x0, [x0]      // 引数は1つで何かへのポインタ
+  213ae4:       aa1f03e3        mov     x3, xzr
+  213ae8:       aa1f03e4        mov     x4, xzr
+  213aec:       aa1f03e5        mov     x5, xzr
+  213af0:       52800106        mov     w6, #0x8      // #8 = Write
+  213af4:       d4000021        svc     #0x1          // suscall
+  213af8:       aa0003e8        mov     x8, x0
+```
+
+- `sh#main()`の最初の`println`と思われる
+- `fs::write()`から戻ってこない
+- `PL011::put_char()`のFIFOが開くのを待っていると思われる
+
+```rust
+//`in /bin/sh#main()
+pub fn main() {
+    println!("\nStarting shell...");
+}
+
+macro_rules! println {
+    ($($args:tt)*) => ({
+        use core::fmt::Write;
+        $crate::UnbufferedFile::stdout().write_fmt(format_args!($($args)*)).unwrap();
+        $crate::UnbufferedFile::stdout().write_str("\n").unwrap();
+    })
+}
+
+impl Write for UnbufferedFile {
+    fn write_str(&mut self, s: &str) -> fmt::Result {
+        write(self.0, s.as_bytes()).unwrap();
+        Ok(())
+    }
+}
+
+#[syscall_function(Write)]
+pub fn write(file: FileDesc, buffer: &[u8]) -> Result<usize, ApiError> {}
+
+#[syscall_handler]
+pub fn syscall_write(file: FileDesc, buffer: &[u8]) -> Result<usize, KernelError> {
+    let file = scheduler::get_current().try_lock()?.files.try_lock()?.get_file(file)?;
+    // 現状はこのfs::write()が復帰しない
+    fs::write(file, buffer)
+}
+
+// kern/fs/vfs.rs
+pub fn write(file: File, buffer: &[u8]) -> Result<usize, KernelError> {
+    let mut fptr = file.lock();
+    let vnode = fptr.vnode.clone();
+    let result = vnode.lock().write(&mut *fptr, buffer)?;
+    Ok(result)
+}
+
+impl VnodeOperations for DevCharDeviceVnode 
+    fn write(&mut self, file: &mut FilePointer, buffer: &[u8]) -> Result<usize, KernelError> {
+        let nbytes = tty::write(self.device_id, buffer)?;
+        file.position += nbytes;
+        Ok(nbytes)
+    }
+
+impl CharOperations for PL011Device
+   fn write(&mut self, buffer: &[u8]) -> Result<usize, KernelError> {
+         for byte in buffer {
+               put_char(*byte);
+         }
+         Ok(buffer.len())
+      }
+
+/// PL011に1文字書き出し（書き出し完了までブロック）
+fn put_char(byte: u8) {
+    unsafe {
+        while (PL011.get(registers::FLAGS) & PL011_FLAGS_TX_FIFO_FULL) != 0 { }
+        PL011.set(registers::DATA, byte as u32);
+    }
+}
+```
+
+- sysin, sysout, syserrは次の関数でセットしている
+
+```rust
+// in binaryies/mod.rs
+pub fn load_process(cmd: &str) -> Result<(), KernelError> {
+   ...
+   let file = fs::open(None, "/dev/console0", OpenFlags::ReadWrite, FileAccess::DefaultFile, 0)?;
+   locked_files.set_slot(FileDesc(0), file.clone())?;
+   locked_files.set_slot(FileDesc(1), file.clone())?;
+   locked_files.set_slot(FileDesc(2), file)?;
+}
+```
+
+- この関数(`load_process`)は以下のようにブートコアの起動時に一度だけ呼ばれる
+
+```sh
+_start
+   _boot_core
+      boot_core_start()
+         register_devices()
+            binaries::load_process("/bin/sh").unwrap();
+```
+
+# rr
+
+```
+$ rr record ./qemu.sh 
+rr needs /proc/sys/kernel/perf_event_paranoid <= 1, but it is 4.
+Change it to 1, or use 'rr record -n' (slow).
+Consider putting 'kernel.perf_event_paranoid = 1' in /etc/sysctl.d/10-rr.conf.
+See 'man 8 sysctl', 'man 5 sysctl.d' (systemd systems)
+and 'man 5 sysctl.conf' (non-systemd systems) for more details.
+```
+
+- silicon mac版のubuntuのqemuは未対応
+
+# lldb
+
+```sh
+'/Users/zuki/raspi_os/ruxpin/config/raspberrypi3/qemu.sh' doesn't contain any 'host' platform architectures: arm64, armv7, armv7f, armv7k, armv7s, armv7m, armv7em, armv6m, armv6, armv5, armv4, arm, thumbv7, thumbv7k, thumbv7s, thumbv7f, thumbv7m, thumbv7em, thumbv6m, thumbv6, thumbv5, thumbv4t, thumb, x86_64, x86_64, arm64, arm64e, arm64, arm64e
+```
+
+## 各種デバッグ出力を1箇所除いて削除した結果、出力されるようになったが
+
+1. `kernel/src/fs/vfs.rs#write(file: File, buffer: &[u8])`で次のようにデバッグ出力する
+
+   - OK: `notice!("{:?}", buffer);`
+
+2. デバッグ行を削除したり、単なる文字列出力だと`Starting shell...`を出力した後フリーズ
+
+   - NG: `notice!(" ");`
+   - NG: この行を削除
+
+3. 以下、[数値]がデバッグ出力。数値は10進の文字コード。実際の出力文字の前にデバッグ出力している
+
+```sh
+$ ./qemu.sh 
+[10, 83, 116, 97, 114, 116, 105, 110, 103, 32, 115, 104, 101, 108, 108, 46, 46, 46]
+
+Starting shell...
+[10]
+
+
+[10, 37, 32]
+
+% ls
+
+[46]
+.
+[10]
+
+
+[46, 46]
+..
+[10]
+
+
+[108, 111, 115, 116, 43, 102, 111, 117, 110, 100]
+lost+found
+[10]
+
+
+[98, 105, 110]
+bin
+[10]
+
+
+[100, 101, 118]
+dev
+[10]
+
+
+[112, 114, 111, 99]
+proc
+[10]
+
+
+[116, 109, 112]
+tmp
+[10]
+
+
+[116, 101, 115, 116, 100, 105, 114]
+testdir
+[10]
+
+
+[116, 101, 115, 116, 50]
+test2
+[10]
+
+Exiting process 3
+
+[112, 105, 100, 32]
+pid 
+[51]
+3
+[32, 101, 120, 105, 116, 101, 100, 32, 119, 105, 116, 104, 32]
+ exited with 
+[48]
+0
+[10]
+
+
+[10, 37, 32]
+
+% ls /
+
+[46]
+.
+[10]
+
+
+[46, 46]
+..
+[10]
+
+
+[108, 111, 115, 116, 43, 102, 111, 117, 110, 100]
+lost+found
+[10]
+
+
+[98, 105, 110]
+bin
+[10]
+
+
+[100, 101, 118]
+dev
+[10]
+
+
+[112, 114, 111, 99]
+proc
+[10]
+
+
+[116, 109, 112]
+tmp
+[10]
+
+
+[116, 101, 115, 116, 100, 105, 114]
+testdir
+[10]
+
+
+[116, 101, 115, 116, 50]
+test2
+[10]
+
+Exiting process 4
+
+[112, 105, 100, 32]
+pid 
+[52]
+4
+[32, 101, 120, 105, 116, 101, 100, 32, 119, 105, 116, 104, 32]
+ exited with 
+[48]
+0
+[10]
+
+
+[10, 37, 32]
+
+% ls /bin
+
+[46]
+.
+[10]
+
+
+[46, 46]
+..
+[10]
+
+
+[115, 104]
+sh
+[10]
+
+
+[108, 115]
+ls
+[10]
+
+
+[97, 114, 103, 115]
+args
+[10]
+
+
+[99, 97, 116]
+cat
+[10]
+
+
+[112, 115]
+ps
+[10]
+
+
+[114, 109]
+rm
+[10]
+
+
+[109, 118]
+mv
+[10]
+
+
+[109, 107, 100, 105, 114]
+mkdir
+[10]
+
+
+[101, 99, 104, 111]
+echo
+[10]
+
+
+[115, 121, 110, 99]
+sync
+[10]
+
+Exiting process 5
+
+[112, 105, 100, 32]
+pid 
+[53]
+5
+[32, 101, 120, 105, 116, 101, 100, 32, 119, 105, 116, 104, 32]
+ exited with 
+[48]
+0
+[10]
+
+
+[10, 37, 32]
+
+% ls /dev
+
+[82, 117, 115, 116, 32, 80, 97, 110, 105, 99, 58, 32]
+Rust Panic: 
+[112, 97, 110, 105, 99, 107, 101, 100, 32, 97, 116, 32]
+panicked at 
+[115, 114, 99, 47, 98, 105, 110, 47, 108, 115, 46, 114, 115]
+src/bin/ls.rs
+[58]
+:
+[50, 48]
+20
+[58]
+:
+[52, 55]
+47
+[58, 10]
+:
+
+[99, 97, 108, 108, 101, 100, 32, 96, 82, 101, 115, 117, 108, 116, 58, 58, 117, 110, 119, 114, 97, 112, 40, 41, 96, 32, 111, 110, 32, 97, 110, 32, 96, 69, 114, 114, 96, 32, 118, 97, 108, 117, 101]
+called `Result::unwrap()` on an `Err` value
+[58, 32]
+: 
+[79, 112, 101, 114, 97, 116, 105, 111, 110, 78, 111, 116, 80, 101, 114, 109, 105, 116, 116, 101, 100]
+OperationNotPermitted
+[10]
+
+Exiting process 6
+
+[112, 105, 100, 32]
+pid 
+[54]
+6
+[32, 101, 120, 105, 116, 101, 100, 32, 119, 105, 116, 104, 32]
+ exited with 
+[45]
+-
+[49]
+1
+[10]
+
+
+[10, 37, 32]
+
+% ls /proc
+
+[46]
+.
+[10]
+
+
+[46, 46]
+..
+[10]
+
+
+[49]
+1
+[10]
+
+
+[50]
+2
+[10]
+
+
+[55]
+7
+[10]
+
+
+[109, 111, 117, 110, 116, 115]
+mounts
+[10]
+
+Exiting process 7
+
+[112, 105, 100, 32]
+pid 
+[55]
+7
+[32, 101, 120, 105, 116, 101, 100, 32, 119, 105, 116, 104, 32]
+ exited with 
+[48]
+0
+[10]
+
+
+[10, 37, 32]
+
+%
+```
